@@ -9,7 +9,7 @@ public class EPButton extends Button {
 		this.id=id;
 		this.elevatorPanel= elevatorPanel;
 	}
-	public void press()
+	public void pressed()
 	{
 		changeStatus(true);
 		System.out.println("Request to Floor No : " + this.id);

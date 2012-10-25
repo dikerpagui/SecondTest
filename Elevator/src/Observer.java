@@ -1,4 +1,4 @@
 
 public interface Observer {
-	public void setElevatorPosition(int pos);
+	public void updateElevatorPosition(int pos);
 }

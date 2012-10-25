@@ -30,7 +30,7 @@ public class Floor extends Part implements Observer{
 			return this.id;
 		}
 		
-		public void setElevatorPosition(int pos)
+		public void updateElevatorPosition(int pos)
 		{
 			this.elevatorPosition=pos;
 		}

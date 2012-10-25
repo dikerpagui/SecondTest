@@ -10,10 +10,10 @@ public class FPButton extends Button {
 		this.floorPanel=floorPanel;
 
 	}
-	public void press()
+	public void pressed()
 	{
 		changeStatus(true);
-		System.out.println("Request from Floor No : " + this.getFloorPanel().getFloor().getID());
+		System.out.println("Request Floor No : " + this.getFloorPanel().getFloor().getID());
 		this.getFloorPanel().getElevator().addRequest(this.getFloorPanel().getFloor().getID(),this.dir);
 	}
 	public FloorPanel getFloorPanel()

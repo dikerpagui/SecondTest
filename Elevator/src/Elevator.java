@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class Elevator extends Part implements Publisher{
+public class Elevator extends Part implements Publisher, Runnable{
 	
 		ElevatorPanel ep;
 		int curPos;
@@ -31,30 +31,45 @@ public class Elevator extends Part implements Publisher{
 		}
 		public void move()
 		{	
-			if(this.curPos > this.getRequests().get(0).getNo())
-				moveUp();
-			else
+			if(this.curPos > getRequest())
 				moveDown();
+			else
+				moveUp();
 			
+		}
+		protected void moveDown()
+		{
+			this.getElevatorPanel().getLED().changeDirection(Direction.DOWN);
+		
+			this.movingDown(); //Elevator is in moving Down State.
+			for(int i=this.curPos; i >= getRequest(); i--)
+			{
+				this.curPos=i;
+				System.out.println("Cur Pos: "+ this.curPos);
+				
+			}
 		}
 		protected void moveUp()
 		{
 			this.getElevatorPanel().getLED().changeDirection(Direction.UP);
 			this.movingUp(); //Elevator is in moving Up State.
-			for(int i=this.curPos; i >= this.getRequests().get(0).getNo(); i--)
+			
+			for(int i=this.curPos; i <= getRequest(); i++)
 			{
 				this.curPos=i;
 				System.out.println("Cur Pos: "+ this.curPos);
-			}
-		}
-		protected void moveDown()
-		{
-			this.getElevatorPanel().getLED().changeDirection(Direction.DOWN);
-			this.movingDown(); //Elevator is in moving Down State.
-			for(int i=this.curPos; i <= this.getRequests().get(0).getNo(); i++)
-			{
-				this.curPos=i;
-				System.out.println("Cur Pos: "+ this.curPos);
+				
+				////////////////////////////////////
+				//Testing for multiple requests..
+				/////////////////////////////////////
+				if(this.curPos==1)
+				{
+					System.out.println("Request has come from floor no 3 while on floor no 1");
+					this.curPos=i+1;
+					this.getFloors().get(3).getFloorPanel().getUpButton().pressed();
+					
+				}
+				if(this.getRequests().size()==0)break;
 			}
 		}
 		public int getCurPos()
@@ -64,7 +79,14 @@ public class Elevator extends Part implements Publisher{
 		
 		public void addRequest(int i, Direction direction)
 		{
-			this.requests.add(new Request(direction,i));
+			//Sorting request..
+			if(this.requests.size()!=0 && getRequest() > i)
+			{
+				this.requests.add(0, new Request(direction,i));
+			}
+			else
+				this.requests.add(new Request(direction,i));
+			
 			this.handleRequest();
 		}
 		
@@ -73,7 +95,8 @@ public class Elevator extends Part implements Publisher{
 			while(this.getRequests().size()!=0)
 			{
 				this.move();
-				setButtonStatusOff();
+				if(!this.requests.isEmpty())
+					setButtonStatusOff();
 				
 				System.out.println("Reached to Floor No: " + this.getCurPos());	
 				this.removeRequest();
@@ -88,18 +111,25 @@ public class Elevator extends Part implements Publisher{
 		
 		public void setButtonStatusOff()
 		{
-			if(this.getRequests().get(0).getDirection()!=null)
+
+			if(getDirection()!=null)
 			{
-				if(this.getRequests().get(0).getDirection()==Direction.UP)
-					this.floors.get(this.getRequests().get(0).getNo()).getFloorPanel().getUpButton().changeStatus(false);
+				if(getDirection()==Direction.UP)
+					this.floors.get(getRequest()).getFloorPanel().getUpButton().changeStatus(false);
 			
-				if(this.getRequests().get(0).getDirection()==Direction.DOWN)
-					this.floors.get(this.getRequests().get(0).getNo()).getFloorPanel().getDownButton().changeStatus(false);
+				if(getDirection()==Direction.DOWN)
+					this.floors.get(getRequest()).getFloorPanel().getDownButton().changeStatus(false);
 			}
 			else
 			{
-				this.getElevatorPanel().getButtonsToFloors().get(this.getRequests().get(0).getNo()).changeStatus(false);
+				this.getElevatorPanel().getButtonsToFloors().get(getRequest()).changeStatus(false);
 			}
+		}
+		private int getRequest() {
+			return this.getRequests().get(0).getNo();
+		}
+		private Direction getDirection() {
+			return this.getRequests().get(0).getDirection();
 		}
 		
 		public void removeRequest()
@@ -144,8 +174,19 @@ public class Elevator extends Part implements Publisher{
 			
 			for(int i=0; i<this.floors.size();i++)
 			{
-				this.floors.get(i).setElevatorPosition(this.getCurPos());
+				this.floors.get(i).updateElevatorPosition(this.getCurPos());
 			}
+		}
+		@Override
+		public void run() {
+
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
 }
 
